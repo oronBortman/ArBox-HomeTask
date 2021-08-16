@@ -7,6 +7,8 @@ XLSX = require('xlsx');
 var argv = require('minimist')(process.argv.slice(2));
 var info_path = argv.i;
 var club_id = argv.c;
+var last_id_in_memberships_table = argv.d;
+var last_user_id_in_db = argv.u;
 
 //Declare consts
 TABLE_NAME_MEMBERSHIPS = "memberships";
@@ -37,8 +39,6 @@ function create_query_per_sheet(worksheet)
   var membership_table = [];
   var users_table_cols = {};
   var user_table = [];
-  var last_user_id_in_db=1;
-  var last_id_in_memberships_table=2;
 
   add_col_to_hash(users_table_cols, "email", worksheet);
   var arr = add_vals_to_array(users_table_cols["email"], num_of_rows, worksheet);
