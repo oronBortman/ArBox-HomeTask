@@ -19,5 +19,5 @@ node index.cjs -i path_to_xlsx_file -c id_of_club -u largest_user_id
 ```
 ### Example
 ```
-node index.cjs -i "jimalaya.xlsx" -c 2400 -d 3 -u 2
+node index.cjs -i "jimalaya.xlsx" -c 2400 -u 2
 ```
