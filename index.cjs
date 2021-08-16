@@ -153,7 +153,7 @@ function create_querys(table_array, table_name, num_of_rows, worksheet)
   }
   sql_query = sql_query.replace(/\n*$/, "");
   sql_query = sql_query.replace(/.$/,"");
-  sql_query+=";
+  sql_query+=";";
   return sql_query;
 }
 
