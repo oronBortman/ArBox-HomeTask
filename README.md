@@ -4,7 +4,7 @@
 First run on your DB the following command to find what is the largest id:
 
 ```sql
-SELECT max(id) from 
+SELECT MAX(id) from 
 ( 
   SELECT MAX(id) AS id FROM product
   UNION 
