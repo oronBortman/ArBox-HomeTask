@@ -1,7 +1,7 @@
 # ArBox-HomeTask
 
 ## Usage
-1. Run on your DB the following command to find what is the largest id:
+1. Run on your db the following command to find what is the largest id of the tables 'product' and 'memberships':
 
 ```sql
 SELECT MAX(id) FROM 
@@ -12,7 +12,7 @@ SELECT MAX(id) FROM
 ) COMBINED;
 ```
 
-2. Run on your DB the following command to find what is the largest user_id:
+2. Run on your db the following command to find what is the largest value of the column user_in in the table 'memberships':
 
 ```sql
 SELECT MAX(user_id) FROM memberships
