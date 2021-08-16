@@ -1,6 +1,3 @@
-//node index.js -i "info.xls" -c "club_id"
-
-const { exit } = require('yargs');
 XLSX = require('xlsx');
 
 //Arguments
