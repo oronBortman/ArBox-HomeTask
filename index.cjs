@@ -58,12 +58,12 @@ function create_query_per_sheet(worksheet)
 
   //Add values to hash table
   add_vals_to_table_hash(membership_table_cols, membership_table, num_of_rows, worksheet );
-  add_incriment_vals_to_table_hash("id", last_id_in_memberships_table, membership_table, num_of_rows, worksheet)
-  add_incriment_vals_to_table_hash("user_id", last_user_id_in_db, membership_table, num_of_rows, worksheet);
+  add_incriment_vals_to_table_hash("id", last_id_in_memberships_table+1, membership_table, num_of_rows, worksheet)
+  add_incriment_vals_to_table_hash("user_id", last_user_id_in_db+1, membership_table, num_of_rows, worksheet);
 
   add_vals_to_table_hash(users_table_cols, user_table, num_of_rows, worksheet );
   add_val_to_table_hash_key("club_id", club_id, user_table, num_of_rows, worksheet);
-  add_incriment_vals_to_table_hash("id", last_id_in_memberships_table, user_table, num_of_rows, worksheet)
+  add_incriment_vals_to_table_hash("id", last_id_in_memberships_table+1, user_table, num_of_rows, worksheet)
 
   //create Querys
   var query_membership = create_querys(membership_table, TABLE_NAME_MEMBERSHIPS, num_of_rows, worksheet);
