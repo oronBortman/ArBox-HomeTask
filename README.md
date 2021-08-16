@@ -6,13 +6,13 @@ SELECT max(id) from
 
 (
   
-  select MAX(id) AS id from product
+  SELECT MAX(id) AS id FROM product
  
- union 
+ UNION 
   
-  select MAX(id) AS id from management
+  SELECT MAX(id) AS id FROM management
 
-) combined;
+) COMBINED;
 
 node index.cjs -i path_to_xlsx_file -c id_of_club -d largest_id_from_before
 
