@@ -18,12 +18,10 @@ create_query_for_workbook(workbook);
 
 function create_query_for_workbook(workbook)
 {
-  console.log(workbook.SheetNames.length);
   for(i=0; i<workbook.SheetNames.length; i++)
   {
     var sheet_name = workbook.SheetNames[i];
     var worksheet = workbook.Sheets[sheet_name];
-    console.log(i);
     create_query_per_sheet(worksheet);
   }
 }
@@ -66,6 +64,7 @@ function create_query_per_sheet(worksheet)
   var query_membership = create_querys(membership_table, TABLE_NAME_MEMBERSHIPS, num_of_rows, worksheet);
   var query_users = create_querys(user_table, TABLE_NAME_USERS, num_of_rows, worksheet);
   console.log(query_membership);
+  console.log("\n");
   console.log(query_users);
 
 }
