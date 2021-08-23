@@ -43,7 +43,7 @@ function create_query_per_sheet(worksheet)
   var num_of_rows=calc_num_of_rows(worksheet);
 
   add_col_to_hash(users_table_cols, "email", worksheet);
-  var duplicates = hasDuplicates(users_table_cols["email"], num_of_rows, worksheet)
+  var duplicates = has_duplicates(users_table_cols["email"], num_of_rows, worksheet)
   if(duplicates)
   {
     console.log("duplicate emails");
@@ -80,7 +80,7 @@ function add_col_to_hash(table_cols, str, worksheet)
   table_cols[str] = key;
 }
 
-function hasDuplicates(col, num_of_rows, worksheet) 
+function has_duplicates(col, num_of_rows, worksheet) 
 {
   seen = new Set();
   for(var i=2; i <= num_of_rows; i++)
