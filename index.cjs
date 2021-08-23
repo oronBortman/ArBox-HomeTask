@@ -1,3 +1,11 @@
+class col_not_from_excel {
+  constructor(col_name, val, incremented) {
+    this.col_name = col_name;
+    this.val = val;
+    this.inc = incremented;
+  }
+}
+
 XLSX = require('xlsx');
 
 //Arguments
@@ -12,8 +20,8 @@ TABLE_NAME_USERS = "users";
 
 //Rread info xlsx
 var workbook = XLSX.readFile(info_path);
-create_query_for_workbook(workbook);
 
+create_query_for_workbook(workbook);
 
 function create_query_for_workbook(workbook)
 {
@@ -27,22 +35,21 @@ function create_query_for_workbook(workbook)
 
 function create_query_per_sheet(worksheet)
 {
-  var num_of_rows=calc_num_of_rows(worksheet);
   //Add to membership table
   var membership_table_cols = {};
-  var membership_table = [];
   var users_table_cols = {};
-  var user_table = [];
+  var membership_table_cols_not_excel = new Array();
+  var users_table_cols_not_excel = new Array();
+  var num_of_rows=calc_num_of_rows(worksheet);
 
   add_col_to_hash(users_table_cols, "email", worksheet);
-  var arr = add_vals_to_array(users_table_cols["email"], num_of_rows, worksheet);
-  if(hasDuplicates(arr))
+  var duplicates = hasDuplicates(users_table_cols["email"], num_of_rows, worksheet)
+  if(duplicates)
   {
     console.log("duplicate emails");
-    exit();
+    return;
   }
-
-  //Add cols to hash
+  //Add cols to hash from excel
   add_col_to_hash(membership_table_cols, "membership_name", worksheet);
   add_col_to_hash(membership_table_cols, "start_date", worksheet);
   add_col_to_hash(membership_table_cols, "end_date", worksheet);
@@ -50,20 +57,18 @@ function create_query_per_sheet(worksheet)
   add_col_to_hash(users_table_cols, "first_name", worksheet);
   add_col_to_hash(users_table_cols, "last_name", worksheet);
 
-  //Add values to hash table
-  add_vals_to_table_hash(membership_table_cols, membership_table, num_of_rows, worksheet );
-  add_incriment_vals_to_table_hash("user_id", last_user_id_in_db+1, membership_table, num_of_rows, worksheet);
+  //Add cols that are not from excel
+  membership_table_cols_not_excel.push(new col_not_from_excel("club_id", club_id, new Boolean(false)));
+  users_table_cols_not_excel.push(new col_not_from_excel("user_id", last_user_id_in_db, new Boolean(true)));
 
-  add_vals_to_table_hash(users_table_cols, user_table, num_of_rows, worksheet );
-  add_val_to_table_hash_key("club_id", club_id, user_table, num_of_rows, worksheet);
 
-  //create Querys
-  var query_membership = create_querys(membership_table, TABLE_NAME_MEMBERSHIPS, num_of_rows, worksheet);
-  var query_users = create_querys(user_table, TABLE_NAME_USERS, num_of_rows, worksheet);
+  //Build queries
+  var query_membership = create_querys(membership_table_cols, TABLE_NAME_MEMBERSHIPS, num_of_rows, worksheet, membership_table_cols_not_excel);
+  var query_users = create_querys(users_table_cols, TABLE_NAME_USERS, num_of_rows, worksheet, users_table_cols_not_excel);
+
   console.log(query_membership);
   console.log("\n");
   console.log(query_users);
-
 }
 
 //Functions
@@ -75,79 +80,96 @@ function add_col_to_hash(table_cols, str, worksheet)
   table_cols[str] = key;
 }
 
-function add_incriment_vals_to_table_hash(key, val, table_array, num_of_rows, worksheet)
-{ 
-  for (let i=0; i < num_of_rows-1; i++) 
+function hasDuplicates(col, num_of_rows, worksheet) 
+{
+  seen = new Set();
+  for(var i=2; i <= num_of_rows; i++)
   {
-    var row_hash_vals = table_array[i];
-    row_hash_vals[key] = val;
-    val+=1;
-  }
-}
-
-function add_val_to_table_hash_key(key, val, table_array, num_of_rows, worksheet)
-{ 
-  for (let i=0; i < num_of_rows-1; i++) 
-  {
-    var row_hash_vals = table_array[i];
-    //console.log(row_hash_vals);
-    row_hash_vals[key] = val;
-    //console.log(row_hash_vals);
-  }
-}
-
-function add_vals_to_table_hash(table_cols, table_array, num_of_rows, worksheet)
-{ 
-  for (let i = 2; i <= num_of_rows; i++) 
-  {
-    row_hash_vals = {};
-    for ( key_name in table_cols)
+    val = get_val_by_col_row(worksheet, col, i);
+    if(seen.has(val))
     {
-      var val = get_val_by_col_row(worksheet, table_cols[key_name], String(i));
-      row_hash_vals[key_name] = val;
+      return true;
     }
-    table_array.push(row_hash_vals);
+    else
+    {
+      seen.add(val);
+    }
   }
+  return false;
 }
 
+function add_to_row_values_not_from_excel(table_cols_not_excel)
+{
+  var sql_query="";
+  for(var j=0; j < table_cols_not_excel.length; j++)
+  {
+    sql_query += "'" + table_cols_not_excel[j].val + "'" + ",";
+    if(table_cols_not_excel[j].inc == true)
+    {
+      table_cols_not_excel[j].val+=1;
+    }
+  }
+  return sql_query;
+}
 
-function add_vals_to_array(table_col, num_of_rows, worksheet)
-{ 
-  var arr = [];
+function add_vals_to_row(table_cols, worksheet, i)
+{
+  sql_query="";
+  for ( col_name in table_cols)
+  {
+    sql_query += "'" + get_val_by_col_row(worksheet, table_cols[col_name], i) + "'" + ",";
+  }
+  return sql_query
+}
+
+function add_rows(num_of_rows, table_cols, table_cols_not_excel, worksheet)
+{
+  sql_query="";
   for (let i = 2; i <= num_of_rows; i++) 
   {
-    var val = get_val_by_col_row(worksheet, table_col, String(i));
-    arr.push(val);
-  }
-  return arr;
-}
-
-function hasDuplicates(array) {
-  return (new Set(array)).size !== array.length;
-}
-
-function create_querys(table_array, table_name, num_of_rows, worksheet)
-{ 
-  var sql_query = "INSERT INTO " + table_name + "(";
-  for ( key_name in table_array[0])
-  {
-    sql_query += key_name + ",";
-  }
-  sql_query = sql_query.replace(/.$/,")");
-  sql_query += "\n";
-  sql_query += "VALUES ";
-
-  for (let i = 0; i < num_of_rows - 1; i++) 
-  {
-    var hash_row = table_array[i];
     sql_query+="(";
-    for ( key_name in hash_row)
-    {
-      sql_query += "'" + hash_row[key_name] + "'" + ",";
-    }
+    sql_query+=add_vals_to_row(table_cols, worksheet, i);
+    sql_query+=add_to_row_values_not_from_excel(table_cols_not_excel);
+
     sql_query = sql_query.replace(/.$/,")");
     sql_query += "," + "\n";
   }
+  return sql_query;
+}
+
+function add_first_row_not_from_excel(table_cols)
+{
+  sql_query="";
+  for(var i=0; i < table_cols.length; i++)
+  {
+    sql_query += table_cols[i].col_name + ",";
+  }
+  return sql_query;
+}
+
+function add_first_row(table_cols)
+{
+  sql_query="";
+  for ( col_name in table_cols)
+  {
+    sql_query += col_name + ",";
+  }
+  return sql_query;
+}
+
+
+function create_querys(table_cols,table_name, num_of_rows, worksheet, table_cols_not_excel)
+{ 
+  var sql_query = "INSERT INTO " + table_name + "(";
+  
+  sql_query += add_first_row(table_cols);
+  
+  sql_query += add_first_row_not_from_excel(table_cols_not_excel);
+  
+  sql_query = sql_query.replace(/.$/,")");
+  sql_query += "\n";
+  sql_query += "VALUES ";
+  sql_query += add_rows(num_of_rows, table_cols,table_cols_not_excel, worksheet);
   sql_query = sql_query.replace(/\n*$/, "");
   sql_query = sql_query.replace(/.$/,"");
   sql_query+=";";
@@ -175,6 +197,11 @@ function remove_digits_from_str(str)
   return str.replace(/[0-9]/g, '');
 }
 
+function remove_letters_from_str(str)
+{
+  return str.replace(/\D+/g, '');
+}
+
 function find_key_of_val(str, worksheet) 
 {
   for(var k in worksheet)
@@ -190,13 +217,6 @@ function find_key_of_val(str, worksheet)
 
 function calc_num_of_rows(worksheet)
 {
-  num_of_rows=0;
-  for(var k in worksheet)
-  {
-    if(k.includes('A'))
-    {
-      num_of_rows+=1;
-    }
-  }
-  return num_of_rows;
+  lastCellKeyName = worksheet["!ref"].split(":")[1];
+  return remove_letters_from_str(lastCellKeyName)
 }
