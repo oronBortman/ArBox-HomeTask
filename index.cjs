@@ -59,7 +59,7 @@ function create_query_per_sheet(worksheet)
 
   //Add cols that are not from excel
   membership_table_cols_not_excel.push(new col_not_from_excel("club_id", club_id, new Boolean(false)));
-  users_table_cols_not_excel.push(new col_not_from_excel("user_id", last_user_id_in_db, new Boolean(true)));
+  users_table_cols_not_excel.push(new col_not_from_excel("user_id", last_user_id_in_db + 1, new Boolean(true)));
 
 
   //Build queries
